@@ -74,6 +74,13 @@ async function run() {
             res.send(options)
 
         })
+        //adding post
+        app.post('/allmedia', async (req, res) => {
+            const item = req.body
+            console.log(item)
+            const result = await allMedia.insertOne(item)
+            res.send(result)
+        })
 
 
     }
