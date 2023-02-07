@@ -1,9 +1,10 @@
+require('dotenv').config()
 const express = require('express');
 const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 5000;
 const { MongoClient, ServerApiVersion } = require('mongodb');
-require('dotenv').config()
+
 
 // middle wares
 app.use(cors());
@@ -22,6 +23,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 async function run() {
     try {
         const userData = client.db('usercolletion').collection('alluser');
+        const allmedia = client.db('usercolletion').collection('allmedia');
 
         app.get('/allusers', async (req, res) => {
             const query = {};
@@ -38,31 +40,38 @@ async function run() {
             res.send(result)
         })
 
-        app.get('/allusers/:email', async (req, res) => {
+        app.get('/updates/:email', async (req, res) => {
             const email = req.params.email;
             const query = { email }
             const options = await userData.findOne(query);
             res.send(options)
 
         })
-        app.put('/allusers/:email', async (req, res) => {
+
+        app.put('/updates/:email', async (req, res) => {
+            const email = req.params.email;
+            const filter = { email };
+            const user = req.body
+            const option = { upsert: true }
 
 
-            const Eemail = req.params.email;
-            const filter = { Eemail };
-            const user = req.body;
-            const option = { upsert: true };
             const updatedUser = {
                 $set: {
-
                     name: user.name,
-                    email: Eemail,
                     password: user.password
 
                 }
             }
-            const result = await userData.updateOne(filter, updatedUser, option);
+            const result = await userData.updateOne(filter, updatedUser, option)
+
             res.send(result)
+
+        })
+
+        app.get('/allmedia', async (req, res) => {
+            const query = {};
+            const options = await allmedia.find(query).toArray();
+            res.send(options)
 
         })
 
