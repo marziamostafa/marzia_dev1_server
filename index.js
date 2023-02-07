@@ -4,7 +4,7 @@ const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 5000;
 const { MongoClient, ServerApiVersion } = require('mongodb');
-
+var ObjectId = require('mongodb').ObjectId
 
 // middle wares
 app.use(cors());
@@ -24,6 +24,7 @@ async function run() {
     try {
         const userData = client.db('usercolletion').collection('alluser');
         const allmedia = client.db('usercolletion').collection('allmedia');
+        const comments = client.db('usercolletion').collection('comments');
 
         app.get('/allusers', async (req, res) => {
             const query = {};
@@ -74,12 +75,57 @@ async function run() {
             res.send(options)
 
         })
+
+
         //adding post
         app.post('/allmedia', async (req, res) => {
             const item = req.body
             console.log(item)
-            const result = await allMedia.insertOne(item)
+            const result = await allmedia.insertOne(item)
             res.send(result)
+        })
+
+
+        //comments
+        app.post('/comments', async (req, res) => {
+            const item = req.body
+            console.log(item)
+            const result = await comments.insertOne(item)
+            res.send(result)
+        })
+
+
+
+
+        app.get('/comments', async (req, res) => {
+            const query = {};
+            const options = await comments.find(query).toArray();
+            res.send(options)
+
+        })
+        app.get('/allmedia/:id', async (req, res) => {
+            const id = req.params.id;
+
+            const query = { _id: ObjectId(id) }
+
+            const options = await allmedia.findOne(query);
+            res.send(options)
+
+        })
+
+
+        app.put('/allmedia/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) }
+            const user = req.body;
+            const option = { upsert: true }
+
+            const updateUser = {
+                $set: {
+                    likes: user.count
+                }
+            }
+            const result = await comments.allmedia(filter, updateUser, option)
         })
 
 
